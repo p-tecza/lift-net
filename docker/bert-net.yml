@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  bert_net:
+    build:  # ← WAŻNE: teraz budujesz obraz z Dockerfile
+      context: .
+      dockerfile: Dockerfile
+    image: net_trainer:latest  # ← możesz używać tej nazwy potem ręcznie, jeśli chcesz
+    container_name: bert_trainer
+    volumes:
+      - ../scripts/:/app  # ← tutaj masz swoje skrypty (np. LSTM.py)
+    working_dir: /app
+    command: ["python", "BERT.py"]  # ← nadpisuje CMD z Dockerfile
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]

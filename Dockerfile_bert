@@ -1,0 +1,19 @@
+FROM tensorflow/tensorflow:2.15.0-gpu
+
+# Instalacja zależności systemowych i pip
+RUN apt-get update && apt-get install -y git && apt-get clean
+
+# Instalacja transformers, pandas, scikit-learn, keras i innych
+RUN pip install --no-cache-dir \
+    transformers \
+    pandas \
+    scikit-learn \
+    keras \
+    numpy
+
+# Dodaj skrypt do katalogu roboczego
+WORKDIR /app
+COPY bert_net.py .
+
+# Domyślne polecenie do uruchomienia
+CMD ["python", "bert_net.py"]
