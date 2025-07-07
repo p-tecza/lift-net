@@ -14,7 +14,7 @@ import pickle
 # lang, lang_long = "de", "german"
 lang, lang_long = "en", "english"
 
-df = pd.read_csv(lang+'-tickets.csv')
+df = pd.read_csv(lang+'-3-classes.csv')
 
 import re
 from nltk.corpus import stopwords
@@ -44,8 +44,8 @@ df['text'] = df['text'].astype(str).apply(lambda x: preprocess_text(x, lang=lang
 df = df.dropna(subset=['type'])
 
 # 4. Tokenizacja tekstu
-max_words = 20000
-max_len = 2000
+max_words = 10000
+max_len = 1000
 
 tokenizer = Tokenizer(num_words=max_words, oov_token="<OOV>")
 tokenizer.fit_on_texts(df['text'])

@@ -28,7 +28,7 @@ def preprocess_text(text, lang="english"):
     return text
 
 # 1. Wczytanie danych
-df = pd.read_csv('en-tickets.csv')
+df = pd.read_csv('en-3-classes.csv')
 df['text'] = df['subject'].fillna('') + ' ' + df['body'].fillna('')
 df['text'] = df['text'].astype(str).apply(lambda x: preprocess_text(x, lang=lang_long))
 df = df.dropna(subset=['type'])
@@ -47,7 +47,7 @@ encodings = tokenizer(
     list(df['text']),
     truncation=True,
     padding=True,
-    max_length=212,
+    max_length=128,
     return_tensors='tf'
 )
 
@@ -60,8 +60,8 @@ y_train, y_temp = train_test_split(
     input_ids,
     attention_mask,
     labels_cat,
-    test_size=0.3,
-    random_state=42
+    test_size=0.2,
+    random_state=21
 )
 
 X_val_input_ids, X_test_input_ids, \
@@ -71,7 +71,7 @@ y_val, y_test = train_test_split(
     X_temp_attention_mask,
     y_temp,
     test_size=0.5,
-    random_state=42
+    random_state=12
 )
 
 # 6. Budowa modelu (POPRAWIONA)
@@ -81,8 +81,8 @@ from transformers import TFBertModel
 bert_model = TFBertModel.from_pretrained('bert-base-uncased')
 
 # Wejścia
-input_ids = Input(shape=(212,), dtype=tf.int32, name='input_ids')
-attention_mask = Input(shape=(212,), dtype=tf.int32, name='attention_mask')
+input_ids = Input(shape=(128,), dtype=tf.int32, name='input_ids')
+attention_mask = Input(shape=(128,), dtype=tf.int32, name='attention_mask')
 
 # Wyjście BERTa (używamy pooler_output - reprezentacja [CLS])
 bert_output = bert_model(input_ids, attention_mask=attention_mask)
@@ -90,9 +90,9 @@ pooled_output = bert_output.pooler_output
 
 # Dodaj własne warstwy klasyfikacyjne
 x = Dropout(0.1)(pooled_output)
-x = Dense(256, activation='relu')(x)  # Warstwa pośrednia
+x = Dense(64, activation='relu')(x)  # Warstwa pośrednia
 x = Dropout(0.2)(x)
-outputs = Dense(4, activation='softmax')(x)  # Warstwa wyjściowa
+outputs = Dense(3, activation='softmax')(x)  # Warstwa wyjściowa
 
 model = Model(inputs=[input_ids, attention_mask], outputs=outputs)
 
@@ -113,7 +113,7 @@ model.compile(
 # 7. Trening (z dodanym monitoringiem)
 early_stop = EarlyStopping(
     monitor='val_accuracy',  # Monitoruj dokładność walidacyjną
-    patience=3,
+    patience=2,
     restore_best_weights=True,
     mode='max'
 )
@@ -129,11 +129,12 @@ history = model.fit(
         [X_val_input_ids, X_val_attention_mask],
         y_val
     ),
-    epochs=6,
+    epochs=4,
     batch_size=8,
     callbacks=[early_stop],
     class_weight=class_weight_dict
 )
+
 
 # Ocena na zbiorze testowym
 loss, acc = model.evaluate(
@@ -150,4 +151,4 @@ with open("models/"+lang+"_bert_tokenizer.pkl", "wb") as f:
     pickle.dump(tokenizer, f)
 
 with open("models/"+lang+"_bert_labels.pkl", "wb") as f:
-    pickle.dump(le, f)
+    pickle.dump(labels_cat, f)

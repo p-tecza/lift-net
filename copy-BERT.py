@@ -138,3 +138,67 @@ loss, acc = model.evaluate(
     y_test
 )
 print(f"Test accuracy: {acc:.4f}")
+
+
+# # 5. Podział na zbiór treningowy i testowy
+# input_ids = encodings['input_ids'].numpy()
+# attention_mask = encodings['attention_mask'].numpy()
+
+# X_train_input_ids, X_test_input_ids, \
+# X_train_attention_mask, X_test_attention_mask, \
+# y_train, y_test = train_test_split(
+#     input_ids,
+#     attention_mask,
+#     labels_cat,
+#     test_size=0.2,
+#     random_state=42
+# )
+
+# # 6. Budowa modelu BERT
+# # bert_model = TFBertModel.from_pretrained('bert-base-uncased')
+# bert_model = TFBertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=4)
+
+# bert_model.trainable = False
+
+# input_ids = Input(shape=(128,), dtype=tf.int32, name='input_ids')
+# attention_mask = Input(shape=(128,), dtype=tf.int32, name='attention_mask')
+
+# steps_per_epoch = len(X_train_input_ids) // 4
+# num_train_steps = steps_per_epoch * 5
+# my_optimizer, _ = create_optimizer(init_lr=0.001, num_train_steps=num_train_steps, num_warmup_steps=0)
+
+# bert_output = bert_model(input_ids, attention_mask=attention_mask)  # [1] = pooled output (CLS token)
+
+# x = bert_output
+# # x = Dropout(0.1)(bert_output)
+# # x = Dense(128, activation='relu')(x)
+# # x = Dropout(0.1)(x)
+# # x = Dense(64, activation='relu')(x)
+# # x = Dropout(0.05)(x)
+# # x = Dense(4, activation='relu')(x)
+# # output = Dense(labels_cat.shape , activation='softmax')(x) #labels_cat.shape[1] | zamiast labels_cat.shape
+
+# model = Model(inputs=[input_ids, attention_mask], outputs=x)
+
+# model.compile(optimizer=my_optimizer, loss='categorical_crossentropy', metrics=['mae'])
+
+# # 7. Trening
+# early_stop = EarlyStopping(monitor='val_loss', patience=6, restore_best_weights=True)
+# # unfreeze_bert = UnfreezeBERT(bert_model, unfreeze_epoch=5)
+
+# history = model.fit(
+#     {'input_ids': X_train_input_ids, 'attention_mask': X_train_attention_mask},
+#     y_train,
+#     validation_split=0.2,
+#     epochs=10,
+#     batch_size=32,
+#     callbacks=[early_stop] #, unfreeze_bert
+# )
+
+# # 8. Ewaluacja
+# loss, acc = model.evaluate(
+#     {'input_ids': X_test_input_ids, 'attention_mask': X_test_attention_mask},
+#     y_test
+# )
+
+# print(f"Test accuracy: {acc:.2f}")
