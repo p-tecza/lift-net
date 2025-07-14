@@ -58,7 +58,8 @@ def predict_en(text):
     
     print("Predicted class:", predicted_class)
     print("Probs:", pred_probs[0])
-    return class_probabilities
+    res = {k.lower(): v for k, v in class_probabilities.items()}
+    return res
 
 def predict_batch_en(texts_with_subjects):
     # Preprocess all texts
@@ -77,10 +78,11 @@ def predict_batch_en(texts_with_subjects):
     it = 0
     for probs in batch_probs:
         class_probabilities = {label: float(prob) for label, prob in zip(EN_LABELS.classes_, probs)}
+        res = {k.lower(): v for k, v in class_probabilities.items()}
         results.append(
             {
                 "id": texts_with_subjects[it]['id'],
-                "result": class_probabilities
+                "result": res
             })
         it+=1
     
